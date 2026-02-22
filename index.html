@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Từ Vựng Tokuteigino</title>
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    background:#f4f6f9;
+    padding:40px;
+}
+.card{
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    width:500px;
+    margin:auto;
+    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+.kanji{
+    font-size:40px;
+    margin:20px 0;
+    font-weight:bold;
+}
+button{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover{
+    transform:scale(1.03);
+}
+.correct{
+    background:#4CAF50;
+    color:white;
+}
+.wrong{
+    background:#f44336;
+    color:white;
+}
+.nextBtn{
+    background:#2196F3;
+    color:white;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Quiz Từ Vựng Ngành Thực Phẩm</h2>
+    <div class="kanji" id="question"></div>
+    <div id="answers"></div>
+    <button class="nextBtn" onclick="nextQuestion()">Câu tiếp</button>
+    <p id="score"></p>
+    <div id="summary"></div>
+</div>
+
+<script>
+
+const data = [
+{kanji:"飲料", hira:"いんりょう", viet:"Đồ uống"},
+{kanji:"食料品", hira:"しょくりょうひん", viet:"Thực phẩm"},
+{kanji:"生活", hira:"せいかつ", viet:"Cuộc sống"},
+{kanji:"工場", hira:"こうじょう", viet:"Nhà máy"},
+{kanji:"製造", hira:"せいぞう", viet:"Sản xuất"},
+{kanji:"仕事", hira:"しごと", viet:"Công việc"},
+{kanji:"缶詰", hira:"かんづめ", viet:"Đồ đóng hộp"},
+{kanji:"調味料", hira:"ちょうみりょう", viet:"Gia vị"},
+{kanji:"冷凍食品", hira:"れいとうしょくひん", viet:"Thực phẩm đông lạnh"},
+{kanji:"ジュース", hira:"じゅーす", viet:"Nước trái cây"},
+{kanji:"食品衛生", hira:"しょくひんえいせい", viet:"Vệ sinh thực phẩm"},
+{kanji:"労働安全", hira:"ろうどうあんぜん", viet:"An toàn lao động"},
+{kanji:"知識", hira:"ちしき", viet:"Kiến thức"}
+];
+
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let results = [];
+
+function shuffle(array){
+    return array.sort(()=>Math.random()-0.5);
+}
+
+function startGame(){
+    questions = shuffle([...data]);
+    currentIndex = 0;
+    score = 0;
+    results = [];
+    document.getElementById("score").innerText="";
+    document.getElementById("summary").innerHTML="";
+    nextQuestion();
+}
+
+function nextQuestion(){
+
+    if(currentIndex >= questions.length){
+        showSummary();
+        return;
+    }
+
+    document.getElementById("answers").innerHTML="";
+    let current = questions[currentIndex];
+    document.getElementById("question").innerText=current.kanji;
+
+    let options = [current];
+
+    while(options.length<3){
+        let random = data[Math.floor(Math.random()*data.length)];
+        if(!options.includes(random)){
+            options.push(random);
+        }
+    }
+
+    options = shuffle(options);
+
+    options.forEach(option=>{
+        let btn = document.createElement("button");
+        btn.innerHTML = option.hira + " - " + option.viet;
+
+        btn.onclick = function(){
+
+            let buttons = document.querySelectorAll("#answers button");
+            buttons.forEach(b=>b.disabled=true);
+
+            let correctText = current.hira + " - " + current.viet;
+            let chosenText = option.hira + " - " + option.viet;
+
+            buttons.forEach(b=>{
+                if(b.innerHTML === correctText){
+                    b.classList.add("correct");
+                }
+            });
+
+            if(option === current){
+                score++;
+            }else{
+                btn.classList.add("wrong");
+            }
+
+            results.push({
+                kanji: current.kanji,
+                chosen: chosenText,
+                correct: correctText,
+                isCorrect: option === current
+            });
+
+            document.getElementById("score").innerText="Điểm: "+score;
+
+            currentIndex++;
+        };
+
+        document.getElementById("answers").appendChild(btn);
+    });
+}
+
+function showSummary(){
+    document.getElementById("question").innerText="🎉 Hoàn thành!";
+    document.getElementById("answers").innerHTML="";
+    document.getElementById("score").innerText="Tổng điểm: "+score+" / "+data.length;
+
+    let summaryHTML = "<h3>Bảng tổng kết</h3>";
+    summaryHTML += "<table border='1' style='width:100%; border-collapse:collapse;'>";
+    summaryHTML += "<tr><th>Kanji</th><th>Bạn chọn</th><th>Đáp án đúng</th><th>Kết quả</th></tr>";
+
+    results.forEach(r=>{
+        summaryHTML += "<tr>";
+        summaryHTML += "<td>"+r.kanji+"</td>";
+        summaryHTML += "<td>"+r.chosen+"</td>";
+        summaryHTML += "<td>"+r.correct+"</td>";
+        summaryHTML += "<td>"+(r.isCorrect ? "✅ Đúng" : "❌ Sai")+"</td>";
+        summaryHTML += "</tr>";
+    });
+
+    summaryHTML += "</table>";
+    summaryHTML += "<br><button onclick='startGame()'>🔄 Chơi lại</button>";
+
+    document.getElementById("summary").innerHTML = summaryHTML;
+}
+
+startGame();
+
+</script>
+
+</body>
+</html>
