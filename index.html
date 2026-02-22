@@ -140,7 +140,7 @@ th{
     top:0;
 }
 .speak-btn{
-    font-size:30px;
+    font-size:20px;
     margin-left:10px;
     cursor:pointer;
     border:none;
@@ -927,14 +927,28 @@ function goBack(){
         document.getElementById("score").innerText="";
     }
 }
+let voices = [];
+
+window.speechSynthesis.onvoiceschanged = function() {
+    voices = window.speechSynthesis.getVoices();
+};
+
 function speakWord(){
-    let text = questions[currentIndex].hira; 
-    // nếu muốn đọc kanji thì đổi thành .kanji
+
+    window.speechSynthesis.cancel();
+
+    let text = questions[currentIndex].hira;
 
     let speech = new SpeechSynthesisUtterance(text);
+
+    let jpVoice = voices.find(v => v.lang.includes("ja"));
+
+    if(jpVoice){
+        speech.voice = jpVoice;
+    }
+
     speech.lang = "ja-JP";
-    speech.rate = 0.9;   // tốc độ
-    speech.pitch = 1;    // cao độ
+    speech.rate = 1;
 
     window.speechSynthesis.speak(speech);
 }
