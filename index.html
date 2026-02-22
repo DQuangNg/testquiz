@@ -139,6 +139,17 @@ th{
     position:sticky;
     top:0;
 }
+.speak-btn{
+    font-size:30px;
+    margin-left:10px;
+    cursor:pointer;
+    border:none;
+    background:none;
+}
+
+.speak-btn:hover{
+    transform:scale(1.2);
+}
 </style>
 </head>
 
@@ -152,6 +163,10 @@ th{
     <button class="backBtn" onclick="goBack()">←</button>
 
     <div class="kanji" id="question"></div>
+    <div class="question-box">
+    <span id="kanjiText"></span>
+    <button onclick="speakWord()" class="speak-btn">🔊</button>
+</div>
     <div id="answers"></div>
 
     <button class="nextBtn">Câu tiếp</button>
@@ -912,7 +927,17 @@ function goBack(){
         document.getElementById("score").innerText="";
     }
 }
+function speakWord(){
+    let text = questions[currentIndex].hira; 
+    // nếu muốn đọc kanji thì đổi thành .kanji
 
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "ja-JP";
+    speech.rate = 0.9;   // tốc độ
+    speech.pitch = 1;    // cao độ
+
+    window.speechSynthesis.speak(speech);
+}
 createMenu();
 
 </script>
