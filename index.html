@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Quiz Từ Vựng Tokuteigino</title>
+
 <style>
 body{
     font-family: Arial, sans-serif;
@@ -11,30 +12,46 @@ body{
     padding:40px;
 }
 
-/* FORM TO HƠN */
+/* MENU */
+#menu{
+    width:800px;
+    margin:auto;
+}
+
+.menuBtn{
+    background:#1e88e5;
+    color:white;
+    font-size:22px;
+    margin:10px 0;
+}
+
+.menuBtn:hover{
+    background:#1565c0;
+}
+
+/* CARD */
 .card{
     background:white;
     padding:50px;
     border-radius:25px;
-    width:750px;   /* tăng kích thước */
+    width:800px;
     margin:auto;
     box-shadow:0 15px 40px rgba(0,0,0,0.15);
+    display:none;
+    position:relative;   
 }
 
-/* TIÊU ĐỀ */
 h2{
     font-size:32px;
     margin-bottom:25px;
 }
 
-/* KANJI TO HƠN */
 .kanji{
     font-size:70px;
     margin:30px 0;
     font-weight:bold;
 }
 
-/* NÚT ĐÁP ÁN TO HƠN */
 button{
     width:100%;
     padding:18px;
@@ -66,91 +83,713 @@ button:hover{
     font-size:22px;
 }
 
-/* ĐIỂM */
+.backBtn{
+    position:absolute;
+    top:15px;
+    left:15px;
+    width:auto;
+    padding:8px 14px;
+    font-size:14px;
+    border-radius:8px;
+    background:#ff9800;
+    color:white;
+}
+
+/* SCORE */
 #score{
     font-size:22px;
     margin-top:20px;
 }
 
-/* BẢNG TỔNG KẾT TO HƠN */
+/* SUMMARY */
+#summaryContainer{
+    max-height:400px;
+    overflow-y:auto;
+    margin-top:20px;
+    border:1px solid #ccc;
+    border-radius:12px;
+    background:#fafafa;
+    padding:5px;
+}
+
+#summaryContainer::-webkit-scrollbar{
+    width:8px;
+}
+
+#summaryContainer::-webkit-scrollbar-thumb{
+    background:#4a89dc;
+    border-radius:10px;
+}
+
 table{
-    font-size:18px;
+    width:100%;
+    border-collapse:collapse;
+    font-size:16px;
 }
 
 th, td{
-    padding:12px;
+    padding:10px;
+    border:1px solid #ccc;
     text-align:center;
 }
 
 th{
     background:#4a89dc;
     color:white;
+    position:sticky;
+    top:0;
 }
 </style>
 </head>
+
 <body>
 
+<div id="menu"></div>
+
 <div class="card">
-    <h2>Quiz Từ Vựng Ngành Thực Phẩm</h2>
+    <h2>Quiz Từ Vựng</h2>
+
+    <button class="backBtn" onclick="goBack()">←</button>
+
     <div class="kanji" id="question"></div>
     <div id="answers"></div>
-    <button class="nextBtn" onclick="nextQuestion()">Câu tiếp</button>
+
+    <button class="nextBtn">Câu tiếp</button>
+
     <p id="score"></p>
-    <div id="summary"></div>
+    <div id="summaryContainer"></div>
 </div>
 
 <script>
 
-const data = [
+/* ===== DATA ===== */
+const allData = [
+/* 1 - 50*/
 {kanji:"飲料", hira:"いんりょう", viet:"Đồ uống"},
 {kanji:"食料品", hira:"しょくりょうひん", viet:"Thực phẩm"},
 {kanji:"生活", hira:"せいかつ", viet:"Cuộc sống"},
 {kanji:"工場", hira:"こうじょう", viet:"Nhà máy"},
 {kanji:"製造", hira:"せいぞう", viet:"Sản xuất"},
 {kanji:"仕事", hira:"しごと", viet:"Công việc"},
+{kanji:"飲食料品製造業", hira:"いんしょくりょうひんせいぞうぎょう", viet:"Ngành sản xuất thực phẩm và đồ uống"},
+{kanji:"ハム・ソーセージ", hira:"はむ・そーせーじ", viet:"Giăm bông – Xúc xích"},
 {kanji:"缶詰", hira:"かんづめ", viet:"Đồ đóng hộp"},
 {kanji:"調味料", hira:"ちょうみりょう", viet:"Gia vị"},
 {kanji:"冷凍食品", hira:"れいとうしょくひん", viet:"Thực phẩm đông lạnh"},
+{kanji:"食料品製造業", hira:"しょくりょうひんせいぞうぎょう", viet:"Ngành sản xuất thực phẩm"},
 {kanji:"ジュース", hira:"じゅーす", viet:"Nước trái cây"},
+{kanji:"農林水産省", hira:"のうりんすいさんしょう", viet:"Bộ Nông – Lâm – Ngư nghiệp Nhật Bản"},
 {kanji:"食品衛生", hira:"しょくひんえいせい", viet:"Vệ sinh thực phẩm"},
 {kanji:"労働安全", hira:"ろうどうあんぜん", viet:"An toàn lao động"},
-{kanji:"知識", hira:"ちしき", viet:"Kiến thức"}
+{kanji:"知識", hira:"ちしき", viet:"Kiến thức"},
+{kanji:"技能", hira:"ぎのう", viet:"Kỹ năng"},
+{kanji:"必要", hira:"ひつよう", viet:"Cần thiết"},
+{kanji:"衛生", hira:"えいせい", viet:"Vệ sinh"},
+{kanji:"病気", hira:"びょうき", viet:"Bệnh"},
+{kanji:"ケガ", hira:"けが", viet:"Bị thương"},
+{kanji:"管理", hira:"かんり", viet:"Quản lý"},
+{kanji:"十分", hira:"じゅうぶん", viet:"Đầy đủ"},
+{kanji:"信用", hira:"しんよう", viet:"Uy tín, tin tưởng"},
+{kanji:"労働災害", hira:"ろうどうさいがい", viet:"Tai nạn lao động"},
+{kanji:"起きる", hira:"おきる", viet:"Xảy ra"},
+{kanji:"作業場", hira:"さぎょうじょう", viet:"Nơi làm việc"},
+{kanji:"着用", hira:"ちゃくよう", viet:"Mặc, đeo"},
+{kanji:"作業服", hira:"さぎょうふく", viet:"Trang phục lao động"},
+{kanji:"ヘルメット", hira:"へるめっと", viet:"Mũ bảo hộ"},
+{kanji:"安全保護具", hira:"あんぜんほごぐ", viet:"Thiết bị bảo hộ an toàn"},
+{kanji:"ルール", hira:"るーる", viet:"Quy định"},
+{kanji:"作業手順書", hira:"さぎょうてじゅんしょ", viet:"Tài liệu hướng dẫn thao tác"},
+{kanji:"作業", hira:"さぎょう", viet:"Công việc, thao tác"},
+{kanji:"機械", hira:"きかい", viet:"Máy móc"},
+{kanji:"器具", hira:"きぐ", viet:"Dụng cụ"},
+{kanji:"使う", hira:"つかう", viet:"Sử dụng"},
+{kanji:"作業者", hira:"さぎょうしゃ", viet:"Người lao động"},
+{kanji:"安全", hira:"あんぜん", viet:"An toàn"},
+{kanji:"健康", hira:"けんこう", viet:"Sức khỏe"},
+{kanji:"食品衛生", hira:"しょくひんえいせい", viet:"Vệ sinh thực phẩm"},
+{kanji:"基本", hira:"きほん", viet:"Cơ bản"},
+{kanji:"行動", hira:"こうどう", viet:"Hành động"},
+{kanji:"手洗い", hira:"てあらい", viet:"Rửa tay"},
+{kanji:"清潔", hira:"せいけつ", viet:"Sạch sẽ"},
+{kanji:"設備", hira:"せつび", viet:"Thiết bị"},
+{kanji:"温度", hira:"おんど", viet:"Nhiệt độ"},
+{kanji:"保管", hira:"ほかん", viet:"Bảo quản"},
+{kanji:"共通", hira:"きょうつう", viet:"Chung"},
+/* 51 - 100*/
+{kanji:"基本的", hira:"きほんてき", viet:"Mang tính cơ bản"},
+{kanji:"重要", hira:"じゅうよう", viet:"Quan trọng"},
+{kanji:"施設", hira:"しせつ", viet:"Cơ sở"},
+{kanji:"衛生管理", hira:"えいせいかんり", viet:"Quản lý vệ sinh"},
+{kanji:"原材料", hira:"げんざいりょう", viet:"Nguyên vật liệu"},
+{kanji:"種類", hira:"しゅるい", viet:"Loại"},
+{kanji:"工程", hira:"こうてい", viet:"Công đoạn, quy trình"},
+{kanji:"重要管理点", hira:"じゅうようかんりてん", viet:"Điểm kiểm soát quan trọng"},
+{kanji:"一般衛生管理", hira:"いっぱんえいせいかんり", viet:"Quản lý vệ sinh chung"},
+{kanji:"HACCPプラン", hira:"はさっぷぷらん", viet:"Kế hoạch HACCP"},
+{kanji:"危害要因分析", hira:"きがいよういんぶんせき", viet:"Phân tích mối nguy"},
+{kanji:"危害要因", hira:"きがいよういん", viet:"Mối nguy"},
+{kanji:"物理的危害要因", hira:"ぶつりてききがいよういん", viet:"Mối nguy vật lý"},
+{kanji:"化学的危害要因", hira:"かがくてききがいよういん", viet:"Mối nguy hóa học"},
+{kanji:"生物的危害要因", hira:"せいぶつてききがいよういん", viet:"Mối nguy sinh học"},
+{kanji:"硬い", hira:"かたい", viet:"Cứng"},
+{kanji:"傷", hira:"きず", viet:"Vết thương"},
+{kanji:"原因", hira:"げんいん", viet:"Nguyên nhân"},
+{kanji:"表", hira:"ひょう", viet:"Bảng biểu"},
+{kanji:"代表的", hira:"だいひょうてき", viet:"Điển hình"},
+{kanji:"金属片", hira:"きんぞくへん", viet:"Mảnh kim loại"},
+{kanji:"グラス片", hira:"ぐらすへん", viet:"Mảnh thủy tinh"},
+{kanji:"プラスチック片", hira:"ぷらすちっくへん", viet:"Mảnh nhựa"},
+{kanji:"石", hira:"いし", viet:"Đá, sạn"},
+{kanji:"取り除く", hira:"とりのぞく", viet:"Loại bỏ"},
+{kanji:"異物", hira:"いぶつ", viet:"Dị vật"},
+{kanji:"卵焼き", hira:"たまごやき", viet:"Trứng chiên"},
+{kanji:"卵の殻", hira:"たまごのから", viet:"Vỏ trứng"},
+{kanji:"硬質遺物", hira:"こうしついぶつ", viet:"Dị vật cứng"},
+{kanji:"防止", hira:"ぼうし", viet:"Ngăn chặn"},
+{kanji:"土", hira:"つち", viet:"Đất"},
+{kanji:"小石", hira:"こいし", viet:"Sỏi"},
+{kanji:"野菜", hira:"やさい", viet:"Rau"},
+{kanji:"洗浄", hira:"せんじょう", viet:"Rửa"},
+{kanji:"選別", hira:"せんべつ", viet:"Sàng lọc"},
+{kanji:"下処理", hira:"したしょり", viet:"Sơ chế"},
+{kanji:"根の部分", hira:"ねのぶぶん", viet:"Phần gốc, rễ"},
+{kanji:"切り取る", hira:"きりとる", viet:"Cắt bỏ"},
+{kanji:"貝の殻", hira:"かいのから", viet:"Vỏ sò"},
+{kanji:"魚のエラ・骨", hira:"さかなのえら・ほね", viet:"Mang và xương cá"},
+{kanji:"蓋をする", hira:"ふたをする", viet:"Đậy nắp"},
+{kanji:"虫", hira:"むし", viet:"Côn trùng"},
+{kanji:"髪の毛", hira:"かみのけ", viet:"Tóc"},
+{kanji:"紙片", hira:"しへん", viet:"Mảnh giấy"},
+{kanji:"不潔", hira:"ふけつ", viet:"Không sạch"},
+{kanji:"不衛生", hira:"ふえいせい", viet:"Mất vệ sinh"},
+{kanji:"苦情", hira:"くじょう", viet:"Khiếu nại"},
+{kanji:"返品", hira:"へんぴん", viet:"Trả hàng"},
+{kanji:"発見", hira:"はっけん", viet:"Phát hiện"},
+{kanji:"責任者", hira:"せきにんしゃ", viet:"Người chịu trách nhiệm"},
+/* 101 - 150*/
+{kanji:"報告", hira:"ほうこく", viet:"Báo cáo"},
+{kanji:"落とす", hira:"おとす", viet:"Làm giảm, làm mất"},
+{kanji:"アレルギー物質", hira:"あれるぎーぶっしつ", viet:"Chất gây dị ứng"},
+{kanji:"ヒスタミン", hira:"ひすたみん", viet:"Histamin"},
+{kanji:"じゃがいもの芽", hira:"じゃがいものめ", viet:"Mầm khoai tây"},
+{kanji:"ソラニン", hira:"そらにん", viet:"Solanin"},
+{kanji:"殺菌剤", hira:"さっきんざい", viet:"Thuốc khử trùng"},
+{kanji:"薬剤", hira:"やくざい", viet:"Hóa chất"},
+{kanji:"アレルギー反応", hira:"あれるぎーはんのう", viet:"Phản ứng dị ứng"},
+{kanji:"アレルゲン", hira:"あれるげん", viet:"Dị nguyên"},
+{kanji:"過剰", hira:"かじょう", viet:"Quá mức"},
+{kanji:"かゆみ", hira:"かゆみ", viet:"Ngứa"},
+{kanji:"じんましん", hira:"じんましん", viet:"Nổi mề đay"},
+{kanji:"唇", hira:"くちびる", viet:"Môi"},
+{kanji:"まぶた", hira:"まぶた", viet:"Mí mắt"},
+{kanji:"腫れる", hira:"はれる", viet:"Sưng"},
+{kanji:"鼻水", hira:"はなみず", viet:"Chảy nước mũi"},
+{kanji:"息ができない", hira:"いきができない", viet:"Khó thở"},
+{kanji:"くしゃみ", hira:"くしゃみ", viet:"Hắt hơi"},
+{kanji:"吐き気", hira:"はきけ", viet:"Buồn nôn"},
+{kanji:"嘔吐", hira:"おうと", viet:"Nôn mửa"},
+{kanji:"下痢", hira:"げり", viet:"Tiêu chảy"},
+{kanji:"腹痛", hira:"ふくつう", viet:"Đau bụng"},
+{kanji:"食中毒", hira:"しょくちゅうどく", viet:"Ngộ độc thực phẩm"},
+{kanji:"細菌", hira:"さいきん", viet:"Vi khuẩn"},
+{kanji:"ウイルス", hira:"ういるす", viet:"Vi rút"},
+{kanji:"寄生虫", hira:"きせいちゅう", viet:"Ký sinh trùng"},
+{kanji:"増殖", hira:"ぞうしょく", viet:"Sinh sôi, phát triển"},
+{kanji:"条件", hira:"じょうけん", viet:"Điều kiện"},
+{kanji:"温度帯", hira:"おんどたい", viet:"Khoảng nhiệt độ"},
+{kanji:"栄養", hira:"えいよう", viet:"Dinh dưỡng"},
+{kanji:"水分", hira:"すいぶん", viet:"Nước, độ ẩm"},
+{kanji:"時間", hira:"じかん", viet:"Thời gian"},
+{kanji:"危険", hira:"きけん", viet:"Nguy hiểm"},
+{kanji:"危険温度帯", hira:"きけんおんどたい", viet:"Khoảng nhiệt độ nguy hiểm"},
+{kanji:"低温", hira:"ていおん", viet:"Nhiệt độ thấp"},
+{kanji:"高温", hira:"こうおん", viet:"Nhiệt độ cao"},
+{kanji:"加熱", hira:"かねつ", viet:"Gia nhiệt"},
+{kanji:"冷却", hira:"れいきゃく", viet:"Làm lạnh"},
+{kanji:"冷蔵", hira:"れいぞう", viet:"Bảo quản lạnh"},
+{kanji:"冷凍", hira:"れいとう", viet:"Đông lạnh"},
+{kanji:"解凍", hira:"かいとう", viet:"Rã đông"},
+{kanji:"十分に", hira:"じゅうぶんに", viet:"Đầy đủ"},
+{kanji:"中心温度", hira:"ちゅうしんおんど", viet:"Nhiệt độ tâm"},
+{kanji:"確認", hira:"かくにん", viet:"Xác nhận"},
+{kanji:"温度計", hira:"おんどけい", viet:"Nhiệt kế"},
+{kanji:"記録", hira:"きろく", viet:"Ghi chép"},
+{kanji:"保存", hira:"ほぞん", viet:"Lưu trữ"},
+{kanji:"管理基準", hira:"かんりきじゅん", viet:"Tiêu chuẩn quản lý"},
+{kanji:"基準", hira:"きじゅん", viet:"Tiêu chuẩn"},
+/* 151 - 200*/
+{kanji:"違反", hira:"いはん", viet:"Vi phạm"},
+{kanji:"改善", hira:"かいぜん", viet:"Cải thiện"},
+{kanji:"是正", hira:"ぜせい", viet:"Khắc phục"},
+{kanji:"措置", hira:"そち", viet:"Biện pháp"},
+{kanji:"実施", hira:"じっし", viet:"Thực hiện"},
+{kanji:"確実", hira:"かくじつ", viet:"Chắc chắn"},
+{kanji:"再発防止", hira:"さいはつぼうし", viet:"Phòng ngừa tái diễn"},
+{kanji:"手順", hira:"てじゅん", viet:"Trình tự"},
+{kanji:"指示", hira:"しじ", viet:"Chỉ thị"},
+{kanji:"従う", hira:"したがう", viet:"Tuân theo"},
+{kanji:"勝手に", hira:"かってに", viet:"Tự ý"},
+{kanji:"禁止", hira:"きんし", viet:"Cấm"},
+{kanji:"注意", hira:"ちゅうい", viet:"Chú ý"},
+{kanji:"表示", hira:"ひょうじ", viet:"Hiển thị"},
+{kanji:"標識", hira:"ひょうしき", viet:"Biển báo"},
+{kanji:"表示板", hira:"ひょうじばん", viet:"Bảng thông báo"},
+{kanji:"周知", hira:"しゅうち", viet:"Phổ biến"},
+{kanji:"教育", hira:"きょういく", viet:"Đào tạo"},
+{kanji:"訓練", hira:"くんれん", viet:"Huấn luyện"},
+{kanji:"定期的", hira:"ていきてき", viet:"Định kỳ"},
+{kanji:"実施日", hira:"じっしび", viet:"Ngày thực hiện"},
+{kanji:"対象", hira:"たいしょう", viet:"Đối tượng"},
+{kanji:"担当者", hira:"たんとうしゃ", viet:"Người phụ trách"},
+{kanji:"責任", hira:"せきにん", viet:"Trách nhiệm"},
+{kanji:"作業前", hira:"さぎょうまえ", viet:"Trước khi làm việc"},
+{kanji:"作業中", hira:"さぎょうちゅう", viet:"Trong khi làm việc"},
+{kanji:"作業後", hira:"さぎょうご", viet:"Sau khi làm việc"},
+{kanji:"点検", hira:"てんけん", viet:"Kiểm tra"},
+{kanji:"清掃", hira:"せいそう", viet:"Vệ sinh"},
+{kanji:"消毒", hira:"しょうどく", viet:"Khử trùng"},
+{kanji:"洗剤", hira:"せんざい", viet:"Chất tẩy rửa"},
+{kanji:"使用量", hira:"しようりょう", viet:"Lượng sử dụng"},
+{kanji:"使用方法", hira:"しようほうほう", viet:"Cách sử dụng"},
+{kanji:"混入", hira:"こんにゅう", viet:"Lẫn vào"},
+{kanji:"防ぐ", hira:"ふせぐ", viet:"Ngăn chặn"},
+{kanji:"異常", hira:"いじょう", viet:"Bất thường"},
+{kanji:"発生", hira:"はっせい", viet:"Phát sinh"},
+{kanji:"速やかに", hira:"すみやかに", viet:"Nhanh chóng"},
+{kanji:"対応", hira:"たいおう", viet:"Ứng phó"},
+{kanji:"中止", hira:"ちゅうし", viet:"Tạm dừng"},
+{kanji:"隔離", hira:"かくり", viet:"Cách ly"},
+{kanji:"廃棄", hira:"はいき", viet:"Tiêu hủy"},
+{kanji:"交換", hira:"こうかん", viet:"Thay thế"},
+{kanji:"修理", hira:"しゅうり", viet:"Sửa chữa"},
+{kanji:"再開", hira:"さいかい", viet:"Hoạt động lại"},
+{kanji:"報告書", hira:"ほうこくしょ", viet:"Báo cáo"},
+{kanji:"記入", hira:"きにゅう", viet:"Ghi vào"},
+{kanji:"提出", hira:"ていしゅつ", viet:"Nộp"},
+{kanji:"確保", hira:"かくほ", viet:"Đảm bảo"},
+{kanji:"品質", hira:"ひんしつ", viet:"Chất lượng"},
+{kanji:"品質管理", hira:"ひんしつかんり", viet:"Quản lý chất lượng"},
+{kanji:"安定", hira:"あんてい", viet:"Ổn định"},
+{kanji:"均一", hira:"きんいつ", viet:"Đồng đều"},
+{kanji:"不良", hira:"ふりょう", viet:"Lỗi"},
+{kanji:"不合格", hira:"ふごうかく", viet:"Không đạt"},
+{kanji:"合格", hira:"ごうかく", viet:"Đạt"},
+{kanji:"判定", hira:"はんてい", viet:"Đánh giá"},
+{kanji:"検査", hira:"けんさ", viet:"Kiểm tra"},
+{kanji:"抜き取り検査", hira:"ぬきとりけんさ", viet:"Kiểm tra lấy mẫu"},
+{kanji:"全数検査", hira:"ぜんすうけんさ", viet:"Kiểm tra toàn bộ"},
+{kanji:"結果", hira:"けっか", viet:"Kết quả"},
+{kanji:"記載", hira:"きさい", viet:"Ghi rõ"},
+{kanji:"確認者", hira:"かくにんしゃ", viet:"Người xác nhận"},
+{kanji:"承認", hira:"しょうにん", viet:"Phê duyệt"},
+{kanji:"出荷", hira:"しゅっか", viet:"Xuất hàng"},
+{kanji:"出荷前", hira:"しゅっかまえ", viet:"Trước khi xuất hàng"},
+{kanji:"包装", hira:"ほうそう", viet:"Đóng gói"},
+{kanji:"梱包", hira:"こんぽう", viet:"Đóng kiện"},
+{kanji:"表示ラベル", hira:"ひょうじらべる", viet:"Nhãn hiển thị"},
+{kanji:"表示内容", hira:"ひょうじないよう", viet:"Nội dung nhãn"},
+{kanji:"製造日", hira:"せいぞうび", viet:"Ngày sản xuất"},
+{kanji:"消費期限", hira:"しょうひきげん", viet:"Hạn sử dụng"},
+{kanji:"賞味期限", hira:"しょうみきげん", viet:"Hạn dùng tốt nhất"},
+{kanji:"ロット番号", hira:"ろっとばんごう", viet:"Số lô"},
+{kanji:"原産地", hira:"げんさんち", viet:"Nơi sản xuất"},
+{kanji:"表示義務", hira:"ひょうじぎむ", viet:"Nghĩa vụ ghi nhãn"},
+{kanji:"法令", hira:"ほうれい", viet:"Pháp luật"},
+{kanji:"遵守", hira:"じゅんしゅ", viet:"Tuân thủ"},
+{kanji:"監査", hira:"かんさ", viet:"Kiểm tra, giám sát"},
+{kanji:"内部監査", hira:"ないぶかんさ", viet:"Kiểm tra nội bộ"},
+{kanji:"外部監査", hira:"がいぶかんさ", viet:"Kiểm tra bên ngoài"},
+{kanji:"指摘", hira:"してき", viet:"Chỉ ra"},
+{kanji:"改訂", hira:"かいてい", viet:"Sửa đổi"},
+{kanji:"更新", hira:"こうしん", viet:"Cập nhật"},
+{kanji:"文書", hira:"ぶんしょ", viet:"Văn bản"},
+{kanji:"保管期間", hira:"ほかんきかん", viet:"Thời gian lưu trữ"},
+{kanji:"管理番号", hira:"かんりばんごう", viet:"Mã quản lý"},
+{kanji:"整理", hira:"せいり", viet:"Sắp xếp"},
+{kanji:"保管場所", hira:"ほかんばしょ", viet:"Nơi lưu trữ"},
+{kanji:"閲覧", hira:"えつらん", viet:"Xem, tra cứu"},
+{kanji:"アクセス", hira:"あくせす", viet:"Truy cập"},
+{kanji:"閲覧権限", hira:"えつらんけんげん", viet:"Quyền xem"},
+{kanji:"持ち出し", hira:"もちだし", viet:"Mang ra ngoài"},
+{kanji:"禁止事項", hira:"きんしじこう", viet:"Điều cấm"},
+{kanji:"情報", hira:"じょうほう", viet:"Thông tin"},
+{kanji:"個人情報", hira:"こじんじょうほう", viet:"Thông tin cá nhân"},
+{kanji:"漏えい", hira:"ろうえい", viet:"Rò rỉ"},
+{kanji:"防止策", hira:"ぼうしさく", viet:"Biện pháp phòng ngừa"},
+{kanji:"パスワード", hira:"ぱすわーど", viet:"Mật khẩu"},
+{kanji:"設定", hira:"せってい", viet:"Cài đặt"},
+{kanji:"変更", hira:"へんこう", viet:"Thay đổi"},
+{kanji:"定期", hira:"ていき", viet:"Định kỳ"},
+{kanji:"管理者", hira:"かんりしゃ", viet:"Người quản lý"},
+{kanji:"権限", hira:"けんげん", viet:"Quyền hạn"},
+{kanji:"削除", hira:"さくじょ", viet:"Xóa"},
+{kanji:"保存データ", hira:"ほぞんでーた", viet:"Dữ liệu lưu"},
+{kanji:"バックアップ", hira:"ばっくあっぷ", viet:"Sao lưu"},
+{kanji:"復元", hira:"ふくげん", viet:"Khôi phục"},
+{kanji:"障害", hira:"しょうがい", viet:"Sự cố"},
+{kanji:"発生時", hira:"はっせいじ", viet:"Khi xảy ra"},
+{kanji:"対処", hira:"たいしょ", viet:"Xử lý"},
+{kanji:"手順書", hira:"てじゅんしょ", viet:"Tài liệu hướng dẫn"},
+{kanji:"連絡", hira:"れんらく", viet:"Liên lạc"},
+{kanji:"連絡先", hira:"れんらくさき", viet:"Nơi liên hệ"},
+{kanji:"速やか", hira:"すみやか", viet:"Nhanh chóng"},
+{kanji:"指示系統", hira:"しじけいとう", viet:"Hệ thống chỉ huy"},
+{kanji:"報告先", hira:"ほうこくさき", viet:"Nơi báo cáo"},
+{kanji:"記録簿", hira:"きろくぼ", viet:"Sổ ghi chép"},
+{kanji:"証拠", hira:"しょうこ", viet:"Bằng chứng"},
+{kanji:"保存期間", hira:"ほぞんきかん", viet:"Thời gian lưu"},
+{kanji:"法的", hira:"ほうてき", viet:"Mang tính pháp lý"},
+{kanji:"要求", hira:"ようきゅう", viet:"Yêu cầu"},
+{kanji:"対応可能", hira:"たいおうかのう", viet:"Có thể xử lý"},
+{kanji:"業務", hira:"ぎょうむ", viet:"Nghiệp vụ"},
+{kanji:"継続", hira:"けいぞく", viet:"Tiếp tục"},
+{kanji:"停止", hira:"ていし", viet:"Dừng"},
+{kanji:"再開条件", hira:"さいかいじょうけん", viet:"Điều kiện hoạt động lại"},
+{kanji:"確認事項", hira:"かくにんじこう", viet:"Mục cần xác nhận"},
+{kanji:"チェックリスト", hira:"ちぇっくりすと", viet:"Danh sách kiểm tra"},
+{kanji:"記入漏れ", hira:"きにゅうもれ", viet:"Thiếu ghi"},
+{kanji:"修正", hira:"しゅうせい", viet:"Sửa chữa"},
+{kanji:"再提出", hira:"さいていしゅつ", viet:"Nộp lại"},
+{kanji:"承認者", hira:"しょうにんしゃ", viet:"Người phê duyệt"},
+{kanji:"決裁", hira:"けっさい", viet:"Quyết định phê duyệt"},
+{kanji:"完了", hira:"かんりょう", viet:"Hoàn thành"},
+{kanji:"完了日", hira:"かんりょうび", viet:"Ngày hoàn thành"},
+{kanji:"遅延", hira:"ちえん", viet:"Trễ"},
+{kanji:"理由", hira:"りゆう", viet:"Lý do"},
+{kanji:"説明", hira:"せつめい", viet:"Giải thích"},
+{kanji:"納得", hira:"なっとく", viet:"Hiểu, chấp nhận"},
+{kanji:"同意", hira:"どうい", viet:"Đồng ý"},
+{kanji:"確約", hira:"かくやく", viet:"Cam kết"},
+{kanji:"実行", hira:"じっこう", viet:"Thực hiện"},
+{kanji:"確実性", hira:"かくじつせい", viet:"Tính chắc chắn"},
+{kanji:"評価", hira:"ひょうか", viet:"Đánh giá"},
+{kanji:"見直し", hira:"みなおし", viet:"Xem xét lại"},
+{kanji:"改善点", hira:"かいぜんてん", viet:"Điểm cải thiện"},
+{kanji:"反映", hira:"はんえい", viet:"Phản ánh"},
+{kanji:"次回", hira:"じかい", viet:"Lần sau"},
+{kanji:"計画", hira:"けいかく", viet:"Kế hoạch"},
+{kanji:"計画書", hira:"けいかくしょ", viet:"Bản kế hoạch"},
+{kanji:"立案", hira:"りつあん", viet:"Lập kế hoạch"},
+{kanji:"実行計画", hira:"じっこうけいかく", viet:"Kế hoạch thực hiện"},
+{kanji:"進捗", hira:"しんちょく", viet:"Tiến độ"},
+{kanji:"管理表", hira:"かんりひょう", viet:"Bảng quản lý"},
+{kanji:"確認会", hira:"かくにんかい", viet:"Buổi xác nhận"},
+{kanji:"会議", hira:"かいぎ", viet:"Cuộc họp"},
+{kanji:"議事録", hira:"ぎじろく", viet:"Biên bản họp"},
+{kanji:"参加者", hira:"さんかしゃ", viet:"Người tham gia"},
+{kanji:"出席", hira:"しゅっせき", viet:"Tham dự"},
+{kanji:"欠席", hira:"けっせき", viet:"Vắng mặt"},
+{kanji:"議題", hira:"ぎだい", viet:"Chủ đề họp"},
+{kanji:"意見", hira:"いけん", viet:"Ý kiến"},
+{kanji:"提案", hira:"ていあん", viet:"Đề xuất"},
+{kanji:"採用", hira:"さいよう", viet:"Áp dụng"},
+{kanji:"却下", hira:"きゃっか", viet:"Bác bỏ"},
+{kanji:"決定", hira:"けってい", viet:"Quyết định"},
+{kanji:"通知", hira:"つうち", viet:"Thông báo"},
+{kanji:"周知徹底", hira:"しゅうちてってい", viet:"Thông báo triệt để"},
+{kanji:"実務", hira:"じつむ", viet:"Công việc thực tế"},
+{kanji:"担当業務", hira:"たんとうぎょうむ", viet:"Nhiệm vụ phụ trách"},
+{kanji:"引き継ぎ", hira:"ひきつぎ", viet:"Bàn giao"},
+{kanji:"引き継ぎ書", hira:"ひきつぎしょ", viet:"Tài liệu bàn giao"},
+{kanji:"移行", hira:"いこう", viet:"Chuyển giao"},
+{kanji:"混乱", hira:"こんらん", viet:"Lộn xộn"},
+{kanji:"防止", hira:"ぼうし", viet:"Phòng tránh"},
+{kanji:"円滑", hira:"えんかつ", viet:"Trôi chảy"},
+{kanji:"実現", hira:"じつげん", viet:"Thực hiện được"},
+{kanji:"効率", hira:"こうりつ", viet:"Hiệu suất"},
+{kanji:"向上", hira:"こうじょう", viet:"Nâng cao"},
+{kanji:"削減", hira:"さくげん", viet:"Cắt giảm"},
+{kanji:"時間短縮", hira:"じかんたんしゅく", viet:"Rút ngắn thời gian"},
+{kanji:"コスト", hira:"こすと", viet:"Chi phí"},
+{kanji:"最適化", hira:"さいてきか", viet:"Tối ưu hóa"},
+{kanji:"改良", hira:"かいりょう", viet:"Cải tiến"},
+{kanji:"技術", hira:"ぎじゅつ", viet:"Kỹ thuật"},
+{kanji:"導入", hira:"どうにゅう", viet:"Áp dụng"},
+{kanji:"検討", hira:"けんとう", viet:"Xem xét"},
+{kanji:"比較", hira:"ひかく", viet:"So sánh"},
+{kanji:"選定", hira:"せんてい", viet:"Lựa chọn"},
+{kanji:"試験", hira:"しけん", viet:"Thử nghiệm"},
+{kanji:"実証", hira:"じっしょう", viet:"Chứng minh"},
+{kanji:"結論", hira:"けつろん", viet:"Kết luận"},
+{kanji:"課題", hira:"かだい", viet:"Vấn đề"},
+{kanji:"解決策", hira:"かいけつさく", viet:"Giải pháp"},
+{kanji:"実行可能", hira:"じっこうかのう", viet:"Có thể thực hiện"},
+{kanji:"優先順位", hira:"ゆうせんじゅんい", viet:"Thứ tự ưu tiên"},
+{kanji:"割り当て", hira:"わりあて", viet:"Phân công"},
+{kanji:"資源", hira:"しげん", viet:"Nguồn lực"},
+{kanji:"人員", hira:"じんいん", viet:"Nhân lực"},
+{kanji:"配置", hira:"はいち", viet:"Bố trí"},
+{kanji:"調整", hira:"ちょうせい", viet:"Điều chỉnh"},
+{kanji:"連携", hira:"れんけい", viet:"Phối hợp"},
+{kanji:"共有", hira:"きょうゆう", viet:"Chia sẻ"},
+{kanji:"目標", hira:"もくひょう", viet:"Mục tiêu"},
+{kanji:"達成", hira:"たっせい", viet:"Đạt được"},
+{kanji:"成果", hira:"せいか", viet:"Kết quả"},
+{kanji:"評価指標", hira:"ひょうかしひょう", viet:"Chỉ số đánh giá"},
+{kanji:"改善活動", hira:"かいぜんかつどう", viet:"Hoạt động cải tiến"},
+{kanji:"継続的改善", hira:"けいぞくてきかいぜん", viet:"Cải tiến liên tục"},
+{kanji:"職場", hira:"しょくば", viet:"Nơi làm việc"},
+{kanji:"環境", hira:"かんきょう", viet:"Môi trường"},
+{kanji:"整備", hira:"せいび", viet:"Bảo dưỡng, sắp xếp"},
+{kanji:"整頓", hira:"せいとん", viet:"Gọn gàng"},
+{kanji:"清潔", hira:"せいけつ", viet:"Sạch sẽ"},
+{kanji:"清掃計画", hira:"せいそうけいかく", viet:"Kế hoạch vệ sinh"},
+{kanji:"清掃用具", hira:"せいそうようぐ", viet:"Dụng cụ vệ sinh"},
+{kanji:"使用後", hira:"しようご", viet:"Sau khi sử dụng"},
+{kanji:"洗浄する", hira:"せんじょうする", viet:"Rửa sạch"},
+{kanji:"乾燥", hira:"かんそう", viet:"Làm khô"},
+{kanji:"保管する", hira:"ほかんする", viet:"Bảo quản"},
+{kanji:"定位置", hira:"ていいち", viet:"Vị trí cố định"},
+{kanji:"区分", hira:"くぶん", viet:"Phân loại"},
+{kanji:"色分け", hira:"いろわけ", viet:"Phân màu"},
+{kanji:"誤使用", hira:"ごしよう", viet:"Dùng nhầm"},
+{kanji:"防止策", hira:"ぼうしさく", viet:"Biện pháp phòng ngừa"},
+{kanji:"手袋", hira:"てぶくろ", viet:"Găng tay"},
+{kanji:"マスク", hira:"ますく", viet:"Khẩu trang"},
+{kanji:"長靴", hira:"ながぐつ", viet:"Ủng"},
+{kanji:"帽子", hira:"ぼうし", viet:"Mũ"},
+{kanji:"着替え", hira:"きがえ", viet:"Thay đồ"},
+{kanji:"専用", hira:"せんよう", viet:"Chuyên dùng"},
+{kanji:"私服", hira:"しふく", viet:"Quần áo thường"},
+{kanji:"持ち込み", hira:"もちこみ", viet:"Mang vào"},
+{kanji:"禁止", hira:"きんし", viet:"Cấm"},
+{kanji:"入口", hira:"いりぐち", viet:"Lối vào"},
+{kanji:"出入口", hira:"でいりぐち", viet:"Lối ra vào"},
+{kanji:"更衣室", hira:"こういしつ", viet:"Phòng thay đồ"},
+{kanji:"手洗い場", hira:"てあらいば", viet:"Chỗ rửa tay"},
+{kanji:"消毒液", hira:"しょうどくえき", viet:"Dung dịch khử trùng"},
+{kanji:"使用する", hira:"しようする", viet:"Sử dụng"},
+{kanji:"手順", hira:"てじゅん", viet:"Trình tự"},
+{kanji:"順守", hira:"じゅんしゅ", viet:"Tuân thủ"},
+{kanji:"爪", hira:"つめ", viet:"Móng tay"},
+{kanji:"短く", hira:"みじかく", viet:"Ngắn"},
+{kanji:"切る", hira:"きる", viet:"Cắt"},
+{kanji:"装飾品", hira:"そうしょくひん", viet:"Đồ trang sức"},
+{kanji:"指輪", hira:"ゆびわ", viet:"Nhẫn"},
+{kanji:"時計", hira:"とけい", viet:"Đồng hồ"},
+{kanji:"外す", hira:"はずす", viet:"Tháo ra"},
+{kanji:"化粧", hira:"けしょう", viet:"Trang điểm"},
+{kanji:"控える", hira:"ひかえる", viet:"Hạn chế"},
+{kanji:"香水", hira:"こうすい", viet:"Nước hoa"},
+{kanji:"毛髪", hira:"もうはつ", viet:"Tóc"},
+{kanji:"異物混入", hira:"いぶつこんにゅう", viet:"Lẫn dị vật"},
+{kanji:"防止", hira:"ぼうし", viet:"Phòng tránh"},
+{kanji:"体調", hira:"たいちょう", viet:"Thể trạng"},
+{kanji:"管理", hira:"かんり", viet:"Quản lý"},
+{kanji:"発熱", hira:"はつねつ", viet:"Sốt"},
+{kanji:"下痢", hira:"げり", viet:"Tiêu chảy"},
+{kanji:"嘔吐", hira:"おうと", viet:"Nôn"},
+{kanji:"症状", hira:"しょうじょう", viet:"Triệu chứng"},
+{kanji:"申告", hira:"しんこく", viet:"Khai báo"},
+{kanji:"上司", hira:"じょうし", viet:"Cấp trên"},
+{kanji:"連絡", hira:"れんらく", viet:"Liên lạc"},
+{kanji:"判断", hira:"はんだん", viet:"Phán đoán"},
+{kanji:"就業制限", hira:"しゅうぎょうせいげん", viet:"Hạn chế làm việc"},
+{kanji:"休業", hira:"きゅうぎょう", viet:"Nghỉ làm"},
+{kanji:"復帰", hira:"ふっき", viet:"Quay lại làm"},
+{kanji:"許可", hira:"きょか", viet:"Cho phép"},
+{kanji:"医師", hira:"いし", viet:"Bác sĩ"},
+{kanji:"診断", hira:"しんだん", viet:"Chẩn đoán"},
+{kanji:"診断書", hira:"しんだんしょ", viet:"Giấy chẩn đoán"},
+{kanji:"提出", hira:"ていしゅつ", viet:"Nộp"},
+{kanji:"確認", hira:"かくにん", viet:"Xác nhận"},
+{kanji:"記録", hira:"きろく", viet:"Ghi chép"},
+{kanji:"保管", hira:"ほかん", viet:"Lưu giữ"},
+{kanji:"定期健康診断", hira:"ていきけんこうしんだん", viet:"Khám sức khỏe định kỳ"},
+{kanji:"実施", hira:"じっし", viet:"Thực hiện"},
+{kanji:"対象者", hira:"たいしょうしゃ", viet:"Đối tượng"},
+{kanji:"結果", hira:"けっか", viet:"Kết quả"},
+{kanji:"異常なし", hira:"いじょうなし", viet:"Không bất thường"},
+{kanji:"要再検査", hira:"ようさいけんさ", viet:"Cần kiểm tra lại"},
+{kanji:"対応", hira:"たいおう", viet:"Xử lý"},
+{kanji:"産業医", hira:"さんぎょうい", viet:"Bác sĩ lao động"},
+{kanji:"指導", hira:"しどう", viet:"Hướng dẫn"},
+{kanji:"改善", hira:"かいぜん", viet:"Cải thiện"},
+{kanji:"職場復帰", hira:"しょくばふっき", viet:"Trở lại nơi làm việc"},
+{kanji:"条件", hira:"じょうけん", viet:"Điều kiện"},
+{kanji:"観察", hira:"かんさつ", viet:"Theo dõi"},
+{kanji:"記録表", hira:"きろくひょう", viet:"Bảng ghi chép"},
+{kanji:"衛生管理者", hira:"えいせいかんりしゃ", viet:"Người quản lý vệ sinh"},
+{kanji:"選任", hira:"せんにん", viet:"Bổ nhiệm"},
+{kanji:"責務", hira:"せきむ", viet:"Trách nhiệm"},
+{kanji:"巡回", hira:"じゅんかい", viet:"Tuần tra"},
+{kanji:"指摘事項", hira:"してきじこう", viet:"Mục bị chỉ ra"},
+{kanji:"是正", hira:"ぜせい", viet:"Khắc phục"},
+{kanji:"改善報告", hira:"かいぜんほうこく", viet:"Báo cáo cải tiến"},
+{kanji:"提出期限", hira:"ていしゅつきげん", viet:"Hạn nộp"},
+{kanji:"管理体制", hira:"かんりたいせい", viet:"Hệ thống quản lý"},
+{kanji:"構築", hira:"こうちく", viet:"Xây dựng"},
+{kanji:"維持", hira:"いじ", viet:"Duy trì"},
+{kanji:"運用", hira:"うんよう", viet:"Vận hành"},
+{kanji:"見直し", hira:"みなおし", viet:"Rà soát"},
+{kanji:"定期", hira:"ていき", viet:"Định kỳ"},
+{kanji:"更新", hira:"こうしん", viet:"Cập nhật"},
+{kanji:"法改正", hira:"ほうかいせい", viet:"Sửa đổi pháp luật"},
+{kanji:"対応", hira:"たいおう", viet:"Đối ứng"},
+{kanji:"周知", hira:"しゅうち", viet:"Phổ biến"},
+{kanji:"教育", hira:"きょういく", viet:"Đào tạo"},
+{kanji:"研修", hira:"けんしゅう", viet:"Tập huấn"},
+{kanji:"新人", hira:"しんじん", viet:"Nhân viên mới"},
+{kanji:"中途", hira:"ちゅうと", viet:"Giữa chừng"},
+{kanji:"採用", hira:"さいよう", viet:"Tuyển dụng"},
+{kanji:"配属", hira:"はいぞく", viet:"Phân công"},
+{kanji:"初期教育", hira:"しょききょういく", viet:"Đào tạo ban đầu"},
+{kanji:"理解度", hira:"りかいど", viet:"Mức độ hiểu"},
+{kanji:"確認", hira:"かくにん", viet:"Kiểm tra"},
+{kanji:"テスト", hira:"てすと", viet:"Bài kiểm tra"},
+{kanji:"合格", hira:"ごうかく", viet:"Đạt"},
+{kanji:"不合格", hira:"ふごうかく", viet:"Không đạt"},
+{kanji:"再教育", hira:"さいきょういく", viet:"Đào tạo lại"},
+{kanji:"記録", hira:"きろく", viet:"Ghi chép"},
+{kanji:"保存", hira:"ほぞん", viet:"Lưu trữ"},
+{kanji:"教育記録", hira:"きょういくきろく", viet:"Hồ sơ đào tạo"},
+{kanji:"監督", hira:"かんとく", viet:"Giám sát"},
+{kanji:"指導者", hira:"しどうしゃ", viet:"Người hướng dẫn"},
+{kanji:"責任者", hira:"せきにんしゃ", viet:"Người chịu trách nhiệm"},
+{kanji:"権限", hira:"けんげん", viet:"Quyền hạn"},
+{kanji:"委任", hira:"いにん", viet:"Ủy quyền"},
+{kanji:"明確化", hira:"めいかくか", viet:"Làm rõ"},
+{kanji:"役割", hira:"やくわり", viet:"Vai trò"},
+{kanji:"分担", hira:"ぶんたん", viet:"Phân chia"},
+{kanji:"連絡体制", hira:"れんらくたいせい", viet:"Hệ thống liên lạc"},
+{kanji:"緊急時", hira:"きんきゅうじ", viet:"Khi khẩn cấp"},
+{kanji:"対応手順", hira:"たいおうてじゅん", viet:"Trình tự ứng phó"},
+{kanji:"避難", hira:"ひなん", viet:"Sơ tán"},
+{kanji:"誘導", hira:"ゆうどう", viet:"Hướng dẫn"},
+{kanji:"集合場所", hira:"しゅうごうばしょ", viet:"Điểm tập trung"},
+{kanji:"人数", hira:"にんずう", viet:"Số người"},
+{kanji:"安否", hira:"あんぴ", viet:"An toàn"},
+{kanji:"確認結果", hira:"かくにんけっか", viet:"Kết quả xác nhận"},
+{kanji:"報告", hira:"ほうこく", viet:"Báo cáo"},
+{kanji:"防災", hira:"ぼうさい", viet:"Phòng chống thiên tai"},
+{kanji:"訓練", hira:"くんれん", viet:"Huấn luyện"},
+{kanji:"参加", hira:"さんか", viet:"Tham gia"},
+{kanji:"評価", hira:"ひょうか", viet:"Đánh giá"},
+{kanji:"安全文化", hira:"あんぜんぶんか", viet:"Văn hóa an toàn"},
+{kanji:"定着", hira:"ていちゃく", viet:"Thấm nhuần"},
+{kanji:"全員", hira:"ぜんいん", viet:"Toàn bộ"},
+{kanji:"推進", hira:"すいしん", viet:"Thúc đẩy"},
+{kanji:"目標", hira:"もくひょう", viet:"Mục tiêu"},
+{kanji:"設定", hira:"せってい", viet:"Thiết lập"},
+{kanji:"達成", hira:"たっせい", viet:"Đạt được"},
+{kanji:"記録管理", hira:"きろくかんり", viet:"Quản lý hồ sơ"},
+{kanji:"文書管理", hira:"ぶんしょかんり", viet:"Quản lý văn bản"},
+{kanji:"標準作業", hira:"ひょうじゅんさぎょう", viet:"Công việc tiêu chuẩn"},
+{kanji:"逸脱", hira:"いつだつ", viet:"Sai lệch"},
+{kanji:"原因究明", hira:"げんいんきゅうめい", viet:"Làm rõ nguyên nhân"},
+{kanji:"有効性", hira:"ゆうこうせい", viet:"Tính hiệu quả"},
+{kanji:"内部規定", hira:"ないぶきてい", viet:"Quy định nội bộ"},
+{kanji:"運用基準", hira:"うんようきじゅん", viet:"Tiêu chuẩn vận hành"},
+{kanji:"改善案", hira:"かいぜんあん", viet:"Phương án cải tiến"},
+{kanji:"展開", hira:"てんかい", viet:"Triển khai"},
+{kanji:"関係者", hira:"かんけいしゃ", viet:"Người liên quan"},
+{kanji:"理解", hira:"りかい", viet:"Hiểu"},
+{kanji:"完了", hira:"かんりょう", viet:"Hoàn thành"},
+{kanji:"監査対応", hira:"かんさたいおう", viet:"Ứng phó kiểm tra"},
+{kanji:"回答", hira:"かいとう", viet:"Trả lời"},
+{kanji:"品質方針", hira:"ひんしつほうしん", viet:"Chính sách chất lượng"},
+{kanji:"安全方針", hira:"あんぜんほうしん", viet:"Chính sách an toàn"},
+{kanji:"衛生方針", hira:"えいせいほうしん", viet:"Chính sách vệ sinh"},
+{kanji:"教育計画", hira:"きょういくけいかく", viet:"Kế hoạch đào tạo"},
+{kanji:"年間計画", hira:"ねんかんけいかく", viet:"Kế hoạch năm"},
+{kanji:"効果測定", hira:"こうかそくてい", viet:"Đo hiệu quả"},
+{kanji:"最新版", hira:"さいしんばん", viet:"Phiên bản mới nhất"},
+{kanji:"配布", hira:"はいふ", viet:"Phát"},
+{kanji:"回収", hira:"かいしゅう", viet:"Thu hồi"},
+{kanji:"日常業務", hira:"にちじょうぎょうむ", viet:"Công việc hằng ngày"},
+{kanji:"実践", hira:"じっせん", viet:"Thực hành"},
+{kanji:"習慣化", hira:"しゅうかんか", viet:"Thành thói quen"},
+{kanji:"組織", hira:"そしき", viet:"Tổ chức"},
+{kanji:"強化", hira:"きょうか", viet:"Tăng cường"},
+{kanji:"目的", hira:"もくてき", viet:"Mục đích"},
+{kanji:"達成度", hira:"たっせいど", viet:"Mức độ đạt"},
+{kanji:"分析", hira:"ぶんせき", viet:"Phân tích"},
+{kanji:"次年度", hira:"じねんど", viet:"Năm sau"},
+{kanji:"計画立案", hira:"けいかくりつあん", viet:"Lập kế hoạch"},
+{kanji:"意識改革", hira:"いしきかいかく", viet:"Cải cách nhận thức"},
+{kanji:"完成", hira:"かんせい", viet:"Hoàn thành"},
+{kanji:"成功", hira:"せいこう", viet:"Thành công"},
+{kanji:"発展", hira:"はってん", viet:"Phát triển"},
+{kanji:"最終成果", hira:"さいしゅうせいか", viet:"Kết quả cuối"}
 ];
+
+/* ===== CONFIG ===== */
+const setSize = 50;
 
 let questions = [];
 let currentIndex = 0;
 let score = 0;
+let answered = false;
 let results = [];
 
+const nextBtn = document.querySelector(".nextBtn");
+const card = document.querySelector(".card");
+const menu = document.getElementById("menu");
+
+/* ===== SHUFFLE SAFE ===== */
 function shuffle(array){
-    return array.sort(()=>Math.random()-0.5);
+    return [...array].sort(()=>Math.random()-0.5);
 }
 
-function startGame(){
-    questions = shuffle([...data]);
-    currentIndex = 0;
-    score = 0;
-    results = [];
-    document.getElementById("score").innerText="";
-    document.getElementById("summary").innerHTML="";
-    nextQuestion();
-}
+/* ===== MENU ===== */
+function createMenu(){
 
-function nextQuestion(){
+    let totalSets = Math.ceil(allData.length / setSize);
+    let html = "<h2>CHỌN BỘ TỪ VỰNG NHÉ !!!</h2>";
 
-    if(currentIndex >= questions.length){
-        showSummary();
-        return;
+    for(let i=0;i<totalSets;i++){
+
+        let start = i * setSize + 1;
+        let end = Math.min((i+1)*setSize, allData.length);
+
+        html += `<button class="menuBtn" onclick="selectSet(${i})">
+                    Bộ ${i+1} (${start} - ${end})
+                 </button>`;
     }
 
-    document.getElementById("answers").innerHTML="";
+    menu.innerHTML = html;
+}
+
+/* ===== SELECT SET ===== */
+function selectSet(setIndex){
+
+    menu.style.display="none";
+    card.style.display="block";
+
+    let start = setIndex * setSize;
+    let end = Math.min(start + setSize, allData.length);
+
+    questions = shuffle(allData.slice(start, end));
+
+    currentIndex = 0;
+    score = 0;
+    answered = false;
+    results = [];
+
+    nextBtn.innerText="Câu tiếp";
+    nextBtn.disabled=true;
+
+    document.getElementById("score").innerText="";
+    document.getElementById("summaryContainer").innerHTML="";
+
+    showQuestion();
+}
+
+/* ===== SHOW QUESTION ===== */
+function showQuestion(){
+
+    answered = false;
+    nextBtn.disabled = true;
+
     let current = questions[currentIndex];
-    document.getElementById("question").innerText=current.kanji;
 
-    let options = [current];
+    document.getElementById("question").innerText = current.kanji;
+    document.getElementById("answers").innerHTML="";
 
-    while(options.length<3){
-        let random = data[Math.floor(Math.random()*data.length)];
+    let options=[current];
+
+    while(options.length<3 && questions.length>1){
+        let random = questions[Math.floor(Math.random()*questions.length)];
         if(!options.includes(random)){
             options.push(random);
         }
@@ -159,73 +798,124 @@ function nextQuestion(){
     options = shuffle(options);
 
     options.forEach(option=>{
-        let btn = document.createElement("button");
-        btn.innerHTML = option.hira + " - " + option.viet;
 
-        btn.onclick = function(){
+        let btn=document.createElement("button");
+        btn.innerHTML=option.hira+" - "+option.viet;
 
-            let buttons = document.querySelectorAll("#answers button");
+        btn.onclick=function(){
+
+            if(answered) return;
+
+            answered=true;
+            nextBtn.disabled=false;
+
+            let buttons=document.querySelectorAll("#answers button");
             buttons.forEach(b=>b.disabled=true);
 
-            let correctText = current.hira + " - " + current.viet;
-            let chosenText = option.hira + " - " + option.viet;
+            let correctText=current.hira+" - "+current.viet;
+            let isCorrect = option===current;
 
             buttons.forEach(b=>{
-                if(b.innerHTML === correctText){
+                if(b.innerHTML===correctText){
                     b.classList.add("correct");
                 }
             });
 
-            if(option === current){
-                score++;
-            }else{
+            if(!isCorrect){
                 btn.classList.add("wrong");
+            }else{
+                score++;
             }
 
             results.push({
                 kanji: current.kanji,
-                chosen: chosenText,
                 correct: correctText,
-                isCorrect: option === current
+                selected: option.hira+" - "+option.viet,
+                status: isCorrect ? "Đúng" : "Sai"
             });
 
-            document.getElementById("score").innerText="Điểm: "+score;
-
-            currentIndex++;
+            document.getElementById("score").innerText=
+                `Điểm: ${score} | Câu ${currentIndex+1}/${questions.length}`;
         };
 
         document.getElementById("answers").appendChild(btn);
     });
 }
 
+/* ===== SHOW SUMMARY ===== */
 function showSummary(){
-    document.getElementById("question").innerText="🎉 Hoàn thành!";
-    document.getElementById("answers").innerHTML="";
-    document.getElementById("score").innerText="Tổng điểm: "+score+" / "+data.length;
 
-    let summaryHTML = "<h3>Bảng tổng kết</h3>";
-    summaryHTML += "<table border='1' style='width:100%; border-collapse:collapse;'>";
-    summaryHTML += "<tr><th>Kanji</th><th>Bạn chọn</th><th>Đáp án đúng</th><th>Kết quả</th></tr>";
+    let html = `
+        <table>
+            <tr>
+                <th>Kanji</th>
+                <th>Đáp án đúng</th>
+                <th>Bạn chọn</th>
+                <th>Kết quả</th>
+            </tr>
+    `;
 
     results.forEach(r=>{
-        summaryHTML += "<tr>";
-        summaryHTML += "<td>"+r.kanji+"</td>";
-        summaryHTML += "<td>"+r.chosen+"</td>";
-        summaryHTML += "<td>"+r.correct+"</td>";
-        summaryHTML += "<td>"+(r.isCorrect ? "✅ Đúng" : "❌ Sai")+"</td>";
-        summaryHTML += "</tr>";
+        html += `
+            <tr>
+                <td>${r.kanji}</td>
+                <td>${r.correct}</td>
+                <td>${r.selected}</td>
+                <td>${r.status}</td>
+            </tr>
+        `;
     });
 
-    summaryHTML += "</table>";
-    summaryHTML += "<br><button onclick='startGame()'>🔄 Chơi lại</button>";
+    html += "</table>";
 
-    document.getElementById("summary").innerHTML = summaryHTML;
+    document.getElementById("summaryContainer").innerHTML = html;
 }
 
-startGame();
+/* ===== NEXT BUTTON ===== */
+nextBtn.onclick=function(){
+
+    if(nextBtn.innerText==="🔄 Chơi lại"){
+        card.style.display="none";
+        menu.style.display="block";
+        return;
+    }
+
+    currentIndex++;
+
+    if(currentIndex>=questions.length){
+
+        document.getElementById("question").innerText="🎉 Hoàn thành!";
+        document.getElementById("answers").innerHTML="";
+        document.getElementById("score").innerText=
+            `Tổng điểm: ${score} / ${questions.length}`;
+
+        showSummary();
+
+        nextBtn.innerText="🔄 Chơi lại";
+        nextBtn.disabled=false;
+
+    }else{
+        showQuestion();
+    }
+};
+
+/* ===== BACK ===== */
+function goBack(){
+
+    if(confirm("Bạn có muốn dừng bài hiện tại không?")){
+        card.style.display="none";
+        menu.style.display="block";
+
+        document.getElementById("summaryContainer").innerHTML="";
+        document.getElementById("answers").innerHTML="";
+        document.getElementById("question").innerText="";
+        document.getElementById("score").innerText="";
+    }
+}
+
+createMenu();
 
 </script>
 
 </body>
-
 </html>
