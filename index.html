@@ -5,47 +5,85 @@
 <title>Quiz Từ Vựng Tokuteigino</title>
 <style>
 body{
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     text-align:center;
-    background:#f4f6f9;
+    background:#eef2f7;
     padding:40px;
 }
+
+/* FORM TO HƠN */
 .card{
     background:white;
-    padding:30px;
-    border-radius:15px;
-    width:500px;
+    padding:50px;
+    border-radius:25px;
+    width:750px;   /* tăng kích thước */
     margin:auto;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+    box-shadow:0 15px 40px rgba(0,0,0,0.15);
 }
+
+/* TIÊU ĐỀ */
+h2{
+    font-size:32px;
+    margin-bottom:25px;
+}
+
+/* KANJI TO HƠN */
 .kanji{
-    font-size:40px;
-    margin:20px 0;
+    font-size:70px;
+    margin:30px 0;
     font-weight:bold;
 }
+
+/* NÚT ĐÁP ÁN TO HƠN */
 button{
     width:100%;
-    padding:12px;
-    margin:10px 0;
+    padding:18px;
+    margin:15px 0;
     border:none;
-    border-radius:8px;
-    font-size:16px;
+    border-radius:12px;
+    font-size:20px;
     cursor:pointer;
     transition:0.3s;
 }
+
 button:hover{
-    transform:scale(1.03);
+    transform:scale(1.05);
 }
+
 .correct{
     background:#4CAF50;
     color:white;
 }
+
 .wrong{
     background:#f44336;
     color:white;
 }
+
 .nextBtn{
-    background:#2196F3;
+    background:#4a89dc;
+    color:white;
+    font-size:22px;
+}
+
+/* ĐIỂM */
+#score{
+    font-size:22px;
+    margin-top:20px;
+}
+
+/* BẢNG TỔNG KẾT TO HƠN */
+table{
+    font-size:18px;
+}
+
+th, td{
+    padding:12px;
+    text-align:center;
+}
+
+th{
+    background:#4a89dc;
     color:white;
 }
 </style>
@@ -189,4 +227,5 @@ startGame();
 </script>
 
 </body>
+
 </html>
