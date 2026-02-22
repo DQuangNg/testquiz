@@ -927,30 +927,41 @@ function goBack(){
         document.getElementById("score").innerText="";
     }
 }
-let voices = [];
+/* ===== SPEECH MOBILE FIX ===== */
 
-window.speechSynthesis.onvoiceschanged = function() {
-    voices = window.speechSynthesis.getVoices();
+let voices = [];
+let voiceLoaded = false;
+
+// Load voices khi có thay đổi
+speechSynthesis.onvoiceschanged = function () {
+    voices = speechSynthesis.getVoices();
+    voiceLoaded = true;
 };
 
-function speakWord(){
+// Bắt buộc phải kích hoạt audio bằng chạm tay trước
+document.body.addEventListener("click", function initAudio() {
+    speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+    document.body.removeEventListener("click", initAudio);
+});
 
-    window.speechSynthesis.cancel();
+function speakWord() {
 
-    let text = questions[currentIndex].hira;
+    if (!questions.length) return;
 
-    let speech = new SpeechSynthesisUtterance(text);
+    let current = questions[currentIndex];
 
-    let jpVoice = voices.find(v => v.lang.includes("ja"));
+    speechSynthesis.cancel();
 
-    if(jpVoice){
-        speech.voice = jpVoice;
+    let utter = new SpeechSynthesisUtterance(current.hira);
+    utter.lang = "ja-JP";
+    utter.rate = 1;
+
+    if (voiceLoaded) {
+        let jpVoice = voices.find(v => v.lang.includes("ja"));
+        if (jpVoice) utter.voice = jpVoice;
     }
 
-    speech.lang = "ja-JP";
-    speech.rate = 1;
-
-    window.speechSynthesis.speak(speech);
+    speechSynthesis.speak(utter);
 }
 createMenu();
 
